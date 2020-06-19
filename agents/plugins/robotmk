@@ -16,6 +16,8 @@ import os
 import sys
 import shutil
 from pathlib import Path
+from contextlib import redirect_stdout,redirect_stderr
+from io import StringIO
 
 #robot options whith a list of multiple values needs a special handling to
 #add global options to suite options.
@@ -182,7 +184,11 @@ for suite,options in cfg['suites'].items():
       host = options.pop('host')
    if debug: print(f'\tStart with following options: {options}')
 ######################## Run robot run..... ###############################################
-   rc = run(ROBOTDIR.joinpath(suite), **options)
+   #We supress any output may come from robot or its submodules
+   #TODO Make debug output work again
+   f = StringIO()
+   with redirect_stdout(f), redirect_stderr(f):
+      rc = run(ROBOTDIR.joinpath(suite), **options)
    if debug: print(f'\trobot finished with returncode: {rc}\n\tLess than 250 shows number of failed tests!')
    if rc > 250: 
       if debug: print('\trobot exited with error and no outputfile is generated.')
